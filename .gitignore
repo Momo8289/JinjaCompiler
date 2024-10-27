@@ -1,0 +1,4 @@
+out/
+templates/
+venv/
+__pycache__/
