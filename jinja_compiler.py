@@ -1,4 +1,3 @@
-#!/home/nick/Projects/JinjaCompiler/venv/bin/python
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import os
 from os.path import join
