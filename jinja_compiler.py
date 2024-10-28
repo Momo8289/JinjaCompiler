@@ -52,8 +52,6 @@ def main(args: argparse.Namespace):
     pages_dir = args.pages_dir
     template_types = args.types.split(",")
 
-    print(args)
-
     for path in [templates_dir, out_dir, join(templates_dir, pages_dir)]:
         if not os.path.exists(path):
             print(f"Directory '{path}' does not exist.")
