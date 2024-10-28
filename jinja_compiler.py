@@ -1,73 +1,90 @@
-from jinja2 import Environment, PackageLoader, select_autoescape
+#!/home/nick/Projects/JinjaCompiler/venv/bin/python
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 import os
 from os.path import join
 from utils import empty_dir, copy_file
 import time
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
+import sys
+import argparse
+from compile import compile_dir
 
 
 
-pages_dir = "templates/pages"
-templates_dir = "templates/"
-out_dir = "out/"
-template_type = ".jinja"
+def run_watcher(args: argparse.Namespace):
+    templates_dir = args.templates_dir
+    out_dir = args.output_dir
+    pages_dir = args.pages_dir
+    template_types = args.types.split(",")
+    class EventHandler(FileSystemEventHandler):
+        def on_any_event(self, event: FileSystemEvent):
+            if event.event_type in ["modified", "created", "deleted"]:
+                print("Changes detected, re-compiling")
+                try:
+                    compile_dir(
+                        templates_dir, 
+                        pages_dir, 
+                        out_dir, 
+                        template_types,
+                        no_copy=args.no_copy
+                    )
+                except Exception as e:
+                    print(e)
 
-for path in [templates_dir, out_dir, pages_dir]:
-        if not os.path.exists(path):
-            os.mkdir(path)
-
-env = Environment(
-    loader=PackageLoader("jinja_compiler"),
-    autoescape=select_autoescape
-)
-
-
-
-def compile_dir(path, clear_out=True, base="./"):
-    if clear_out: empty_dir(out_dir)
-
-    for file in os.listdir(join(templates_dir, path)):
-        full_path = join(path, file)
-        real_path = join(templates_dir, path, file)
-
-        if os.path.isdir(real_path):
-            os.mkdir(join(out_dir, base, file))
-            compile_dir(full_path, base=join(base, file), clear_out=False)
-            continue
-
-        if not os.path.isfile(real_path):
-            # print(f"Skipping non-file '{full_path}'") 
-            continue
-
-        if not file.endswith(template_type):
-            # print(f"Copying non-template file '{file}'")
-            copy_file(real_path, join(out_dir, base, file))
-            continue
-        
-        out_path = join(out_dir, base, file.replace(template_type, ".html"))
-        with open(out_path, "w") as out:
-            template = env.get_template(full_path)
-            out.write(template.render())
-            # print(f"Template '{file}' rendered")
-
-
-class EventHandler(FileSystemEventHandler):
-    def on_any_event(self, event: FileSystemEvent):
-        if event.event_type in ["modified", "created", "deleted"]:
-            print("Changes detected, re-compiling")
-            compile_dir("pages/")
-
-
-if __name__ == "__main__":
-    compile_dir("pages/")
     event_handler = EventHandler()
     observer = Observer()
-    observer.schedule(event_handler, "./templates/", recursive=True)
+    observer.schedule(event_handler, templates_dir, recursive=True)
     observer.start()
     try:
         while True:
             time.sleep(1)
+    except KeyboardInterrupt:
+        print("Keyboard interrupt")
+        return
     finally:
         observer.stop()
         observer.join()
+
+
+def main(args: argparse.Namespace):
+    templates_dir = args.templates_dir
+    out_dir = args.output_dir
+    pages_dir = args.pages_dir
+    template_types = args.types.split(",")
+
+    print(args)
+
+    for path in [templates_dir, out_dir, join(templates_dir, pages_dir)]:
+        if not os.path.exists(path):
+            print(f"Directory '{path}' does not exist.")
+            return
+    
+    compile_dir(
+        templates_dir, 
+        pages_dir, 
+        out_dir, 
+        template_types,
+        no_copy=args.no_copy,
+    )
+
+    if args.watch:
+        run_watcher(args)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="JinjaCompiler",
+        description="Compile Jinja templates into static HTML files",
+    )   
+
+    parser.add_argument("templates_dir", help="Path to the directory containing the Jinja templates")
+    parser.add_argument("output_dir", help="Path where the compliled files should go. Folder structure will copy that of pages_dir. Directory contents are deleted before compiling, dont put stuff in here that you want to keep.")
+    parser.add_argument("-p", "--pages-dir", default="pages/", help="Relative path in templates_dir which contains the templates that will be compiled to HTML. Default: 'pages/'")
+    parser.add_argument("-w", "--watch", action="store_true", help="Run in watcher mode, which will monitor templates_dir for changes and automatically recompile.")
+    parser.add_argument("-t", "--types", default="jinja", help="Comma-separated list of file types that will be treated as Jinja templates. Default: .jinja")
+    parser.add_argument("-n", "--no-copy", action="store_true", help="Don't copy non-template files into output directory.")
+
+    args = parser.parse_args()
+
+    main(args)
