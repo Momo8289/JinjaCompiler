@@ -1,14 +1,14 @@
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-import os
-from os.path import join
-from utils import empty_dir, copy_file
-import time
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
-import sys
-import argparse
-from compile import compile_dir
 
+import os
+from os.path import join
+import time
+import argparse
+
+from utils import empty_dir, copy_file
+from compile import compile_dir
 
 
 def run_watcher(args: argparse.Namespace):
