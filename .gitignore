@@ -2,3 +2,6 @@ out/
 templates/
 venv/
 __pycache__/
+build/
+dist/
+jinja_compiler.spec
