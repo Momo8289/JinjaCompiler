@@ -6,7 +6,6 @@ from os.path import join
 from utils import empty_dir, copy_file
 
 
-
 def compile_dir(
     templates_dir: str, 
     pages_dir: str, 
