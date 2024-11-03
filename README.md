@@ -38,3 +38,7 @@ pyinstaller -F jinja_compiler.py
 
 # Executable will be located in the newly created dist directory
 ```
+
+## Attribution
+The SSE code for auto-reloading with the debug webserver is from the article [Server-sent events in Flask without extra dependencies](https://maxhalford.github.io/blog/flask-sse-no-deps/).
+The license for this code (MIT) can be found in `SSE_LICENSE`.
