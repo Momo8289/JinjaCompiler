@@ -2,14 +2,14 @@
 This program takes a directory containing Jinja templates, renders them, and outputs them for use in a static website.
 
 ```
-usage: JinjaCompiler [-h] [-p PAGES_DIR] [-w] [-t TYPES] [-n] templates_dir output_dir
+usage: JinjaCompiler [-h] [-p PAGES_DIR] [-w] [-t TYPES] [-n] [-s] [-P PORT] templates_dir output_dir
 
 Compile Jinja templates into static HTML files
 
 positional arguments:
   templates_dir         Path to the directory containing the Jinja templates
-  output_dir            Path where the compliled files should go. Folder structure will copy that of pages_dir. Directory contents
-                        are deleted before compiling, dont put stuff in here that you want to keep.
+  output_dir            Path where the compliled files should go. Folder structure will copy that of pages_dir. Directory contents are deleted before compiling, dont put stuff in
+                        here that you want to keep.
 
 options:
   -h, --help            show this help message and exit
@@ -19,6 +19,9 @@ options:
   -t TYPES, --types TYPES
                         Comma-separated list of file types that will be treated as Jinja templates. Default: .jinja
   -n, --no-copy         Don't copy non-template files into output directory.
+  -s, --server          Serve the output dir with a local webserver. Does nothing without -w.
+  -P PORT, --port PORT  Port the webserver will be served on.
+
 ```
 
 ## Compiling as a standalone executable
